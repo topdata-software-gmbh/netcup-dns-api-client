@@ -27,6 +27,33 @@ class NetcupDnsApiClient
         $this->apipassword = $apipassword;
     }
 
+
+    /**
+     * private helper
+     */
+    private function _post($action, array $extraParams = []): array
+    {
+        $response = $this->httpClient->request('POST', self::ENDPOINT, [
+            'json' => [
+                'action' => $action,
+                'param'  => array_merge([
+                    'apikey'         => $this->apikey,
+                    'apisessionid'   => $this->apisessionid ?? null,
+                    'customernumber' => $this->customernumber
+                ], $extraParams),
+            ]
+        ]);
+
+        $data = $response->toArray();
+
+        if ($data['status'] !== 'success') {
+            throw new \Exception('Error: ' . $data['longmessage']);
+        }
+
+        return $data;
+    }
+
+
     /**
      * Logs in to the API using provided credentials.
      *
@@ -53,29 +80,12 @@ class NetcupDnsApiClient
         if ($data['status'] !== 'success') {
             throw new \Exception('Error: ' . $data['longmessage']);
         }
-
-        // Set the session ID for subsequent API requests
         $this->apisessionid = $data['responsedata']['apisessionid'];
     }
 
-
-
     public function logout()
     {
-        $response = $this->httpClient->request('POST', self::ENDPOINT, [
-            'json' => [
-                'action' => 'logout',
-                'param'  => [
-                    'apikey'         => $this->apikey,
-                    'apisessionid'   => $this->apisessionid,
-                    'customernumber' => $this->customernumber
-                ]
-            ]
-        ]);
-
-        if($response->toArray()['status'] !== 'success') {
-            throw new \Exception('Error: ' . $response->toArray()['longmessage']);
-        }
+        $this->_post('logout');
         $this->apisessionid = null;
     }
 
@@ -110,62 +120,175 @@ class NetcupDnsApiClient
 //}
     public function addRecord(string $hostname, string $domain, $recordType, $destination, $priority = 0)
     {
-        $response = $this->httpClient->request('POST', self::ENDPOINT, [
-            'json' => [
-                'action' => 'updateDnsRecords',
-                'param'  => [
-                    'apikey'         => $this->apikey,
-                    'apisessionid'   => $this->apisessionid,
-                    'customernumber' => $this->customernumber,
-                    'clientrequestid' => uniqid(),
-                    'domainname'     => $domain,
-                    'dnsrecordset'   => [
-                        'dnsrecords' => [
-                            [
-                                'id'          => '',
-                                'hostname'    => $hostname,
-                                'type'        => $recordType,
-                                'priority'    => $priority,
-                                'destination' => $destination,
-                                'deleterecord' => 'false',
-                                'state'       => 'yes'
-                            ]
-                        ]
+        $data = $this->_post('updateDnsRecords', [
+            'clientrequestid' => uniqid(),
+            'domainname'      => $domain,
+            'dnsrecordset'    => [
+                'dnsrecords' => [
+                    [
+                        'id'           => '',
+                        'hostname'     => $hostname,
+                        'type'         => $recordType,
+                        'priority'     => $priority,
+                        'destination'  => $destination,
+                        'deleterecord' => 'false',
+                        'state'        => 'yes'
                     ]
                 ]
             ]
         ]);
     }
 
+//delRecord() {
+//	login
+//	if [ "$4" == "CAA" ] || [ "$4" == "caa" ]; then
+//		if [ "$(echo "$5" | cut -d' ' -f2)" == "issue" ] || [ "$(echo "$5" | cut -d' ' -f2)" == "iodef" ] || [ "$(echo "$5" | cut -d' ' -f2)" == "issuewild" ]; then
+//			prepstate=$(echo "$5" | cut -d' ' -f3)
+//			dest=${5//$prepstate/\\"\"$prepstate\\"\"}
+//		else
+//			echo "Error: Please Check your CAA Record"
+//			logout
+//			exit 1
+//		fi
+//	else
+//		dest=$5
+//	fi
+//	tmp=$(curl -s -X POST -d "{\"action\": \"updateDnsRecords\", \"param\": {\"apikey\": \"$apikey\", \"apisessionid\": \"$sid\", \"customernumber\": \"$cid\",\"clientrequestid\": \"$client\" , \"domainname\": \"$3\", \"dnsrecordset\": { \"dnsrecords\": [ {\"id\": \"$1\", \"hostname\": \"$2\", \"type\": \"$4\", \"priority\": \"${6:-"0"}\", \"destination\": \"$dest\", \"deleterecord\": \"TRUE\", \"state\": \"yes\"} ]}}}" "$end")
+//	if [ $debug = true ]; then
+//		echo "${tmp}"
+//	fi
+//	if [ "$(echo "$tmp" | jq -r .status)" != "success" ]; then
+//		echo "Error: $tmp"
+//		logout
+//		return 1
+//	fi
+//	logout
+//}
+
     public function delRecord($id, $host, $domain, $recordType, $destination, $priority = 0)
     {
-        // Implement delRecord function
+        $data = $this->_post('updateDnsRecords', [
+            'clientrequestid' => uniqid(),
+            'domainname'      => $domain,
+            'dnsrecordset'    => [
+                'dnsrecords' => [
+                    [
+                        'id'           => $id,
+                        'hostname'     => $host,
+                        'type'         => $recordType,
+                        'priority'     => $priority,
+                        'destination'  => $destination,
+                        'deleterecord' => 'TRUE',
+                        'state'        => 'yes'
+                    ]
+                ]
+            ]
+        ]);
     }
+
+
+//modRecord() {
+//	login
+//	if [ "$4" == "CAA" ] || [ "$4" == "caa" ]; then
+//		if [ "$(echo "$5" | cut -d' ' -f2)" == "issue" ] || [ "$(echo "$5" | cut -d' ' -f2)" == "iodef" ] || [ "$(echo "$5" | cut -d' ' -f2)" == "issuewild" ]; then
+//			prepstate=$(echo "$5" | cut -d' ' -f3)
+//			dest=${5//$prepstate/\\"\"$prepstate\\"\"}
+//		else
+//			echo "Error: Please Check your CAA Record"
+//			logout
+//			exit 1
+//		fi
+//	else
+//		dest=$5
+//	fi
+//	tmp=$(curl -s -X POST -d "{\"action\": \"updateDnsRecords\", \"param\": {\"apikey\": \"$apikey\", \"apisessionid\": \"$sid\", \"customernumber\": \"$cid\",\"clientrequestid\": \"$client\" , \"domainname\": \"$3\", \"dnsrecordset\": { \"dnsrecords\": [ {\"id\": \"$1\", \"hostname\": \"$2\", \"type\": \"$4\", \"priority\": \"${6:-"0"}\", \"destination\": \"$dest\", \"deleterecord\": \"FALSE\", \"state\": \"yes\"} ]}}}" "$end")
+//	if [ $debug = true ]; then
+//		echo "${tmp}"
+//	fi
+//	if [ "$(echo "$tmp" | jq -r .status)" != "success" ]; then
+//		echo "Error: $tmp"
+//		logout
+//		return 1
+//	fi
+//	logout
+//}
 
     public function modRecord($id, $host, $domain, $recordType, $destination, $priority = 0)
     {
-        // Implement modRecord function
+        $data = $this->_post('updateDnsRecords', [
+            'clientrequestid' => uniqid(),
+            'domainname'      => $domain,
+            'dnsrecordset'    => [
+                'dnsrecords' => [
+                    [
+                        'id'           => $id,
+                        'hostname'     => $host,
+                        'type'         => $recordType,
+                        'priority'     => $priority,
+                        'destination'  => $destination,
+                        'deleterecord' => 'FALSE',
+                        'state'        => 'yes'
+                    ]
+                ]
+            ]
+        ]);
     }
+
+
+
+//getSOA() {
+//	login
+//	tmp=$(curl -s -X POST -d "{\"action\": \"infoDnsZone\", \"param\": {\"apikey\": \"$apikey\", \"apisessionid\": \"$sid\", \"customernumber\": \"$cid\", \"domainname\": \"$1\"}}" "$end")
+//	if [ $debug = true ]; then
+//		echo "$tmp"
+//	fi
+//	if [ "$(echo "$tmp" | jq -r .status)" != "success" ]; then
+//		echo "Error: $tmp"
+//		logout
+//		return 1
+//	fi
+//	xxd=$(echo "${tmp}" | jq -r '.responsedata')
+//	echo "$xxd"
+//	logout
+//}
+
 
     public function getSOA($domain)
     {
-        // Implement getSOA function
+        $data = $this->_post('infoDnsZone', [
+            'domainname' => $domain
+        ]);
+
+        return $data['responsedata'];
     }
+
+
+//getRecords() {
+//	login
+//	tmp=$(curl -s -X POST -d "{\"action\": \"infoDnsRecords\", \"param\": {\"apikey\": \"$apikey\", \"apisessionid\": \"$sid\", \"customernumber\": \"$cid\", \"domainname\": \"$1\"}}" "$end")
+//	if [ $debug = true ]; then
+//		echo "$tmp"
+//	fi
+//	if [ "$(echo "$tmp" | jq -r .status)" != "success" ]; then
+//		echo "Error: $tmp"
+//		logout
+//		return 1
+//	fi
+//	xxd=$(echo "${tmp}" | jq -r '.responsedata.dnsrecords')
+//	echo "$xxd"
+//	logout
+//}
+
 
     public function getRecords($domain)
     {
-        // Implement getRecords function
+        $data = $this->_post('infoDnsRecords', [
+            'domainname' => $domain
+        ]);
+
+        return $data['responsedata']['dnsrecords'];
     }
 
-    public function backup($domain)
-    {
-        // Implement backup function
-    }
-
-    public function restore($file)
-    {
-        // Implement restore function
-    }
 
     public function setSOA($domain, $ttl, $refresh, $retry, $expire, $dnssecstatus)
     {
