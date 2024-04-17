@@ -32,7 +32,7 @@ function makeBackup(array $credentials, string $domain, string $pathDestJsonFile
 $dotenv = new Dotenv();
 $dotenv->load(__DIR__ . '/.env');
 $domain = $_ENV['NETCUP_DOMAIN'];
-$netcupApiCredentials = [
+$credentials = [
     'customernumber' => $_ENV['NETCUP_CUSTOMERNUMBER'],
     'apikey'         => $_ENV['NETCUP_APIKEY'],
     'apipassword'    => $_ENV['NETCUP_APIPASSWORD'],
@@ -41,12 +41,12 @@ $pathDestJsonFile = '/tmp/backup-' . $domain . '-' . date('Ymd-His') . '.json';
 
 // ---- print config for debugging
 dump([
-    'netcupApiCredentials' => $netcupApiCredentials,
+    'netcupApiCredentials' => $credentials,
     'domain'               => $domain,
     'pathDestJsonFile'     => $pathDestJsonFile
 ]);
 
 // ---- main
-makeBackup($netcupApiCredentials, $domain, $pathDestJsonFile);
+makeBackup($credentials, $domain, $pathDestJsonFile);
 
 echo "wrote backup to $pathDestJsonFile\n";

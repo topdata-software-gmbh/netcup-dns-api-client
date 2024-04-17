@@ -1,24 +1,25 @@
 {
-    "name": "topdata-software-gmbh/netcup-dns-api-client",
+    "name":        "topdata-software-gmbh/netcup-dns-api-client",
     "description": "A php client for the Netcup DNS API",
-    "type": "library",
-    "require": {
+    "type":        "library",
+    "require":     {
         "symfony/http-client": "^7.0"
     },
     "require-dev": {
+        "ext-json":                  "*",
         "friendsofphp/php-cs-fixer": "^3.54",
-        "symfony/dotenv": "^7.0",
-        "symfony/var-dumper": "^7.0"
+        "symfony/dotenv":            "^7.0",
+        "symfony/var-dumper":        "^7.0"
     },
-    "license": "MIT",
-    "autoload": {
+    "license":     "MIT",
+    "autoload":    {
         "psr-4": {
             "TopdataSoftwareGmbh\\NetcupDnsApiClient\\": "src/"
         }
     },
-    "authors": [
+    "authors":     [
         {
-            "name": "Marc Christenfeldt",
+            "name":  "Marc Christenfeldt",
             "email": "marc.christenfeldt@gmx.de"
         }
     ]
