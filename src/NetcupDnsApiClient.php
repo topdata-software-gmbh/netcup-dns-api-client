@@ -340,7 +340,7 @@ class NetcupDnsApiClient
 //	logout
 //}
 
-    public function listDomains()
+    public function getDomains()
     {
         $data = $this->_post('listallDomains');
 
