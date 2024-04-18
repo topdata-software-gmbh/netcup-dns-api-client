@@ -1,7 +1,7 @@
 <?php
 
 /**
- * it backups a domain's DNS records to a JSON file
+ * it backups a domain's DNS records to a JSON file.
  */
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -43,7 +43,7 @@ $pathDestJsonFile = '/tmp/backup-' . $domain . '-' . date('Ymd-His') . '.json';
 dump([
     'netcupApiCredentials' => $credentials,
     'domain'               => $domain,
-    'pathDestJsonFile'     => $pathDestJsonFile
+    'pathDestJsonFile'     => $pathDestJsonFile,
 ]);
 
 // ---- main

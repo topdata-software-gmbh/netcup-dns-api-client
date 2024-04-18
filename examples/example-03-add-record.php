@@ -1,9 +1,8 @@
 <?php
 
 /**
- * it backups a domain's DNS records to a JSON file
+ * it backups a domain's DNS records to a JSON file.
  */
-
 const SUBDOMAIN = 'testsubdomain';
 const DEST_IP = '1.2.3.4';
 const RECORD_TYPE = 'A';
@@ -11,8 +10,6 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Symfony\Component\Dotenv\Dotenv;
 use TopdataSoftwareGmbh\NetcupDnsApiClient\NetcupDnsApiClient;
-
-
 
 // ---- load config from .env
 $dotenv = new Dotenv();
@@ -37,4 +34,4 @@ $responseBody = $client->addRecord($domain, SUBDOMAIN, RECORD_TYPE, DEST_IP);
 // dump($responseBody);
 $client->logout();
 
-echo "added subdomain " . SUBDOMAIN . " to domain " . $domain . " with IP " . DEST_IP . "\n";
+echo 'added subdomain ' . SUBDOMAIN . ' to domain ' . $domain . ' with IP ' . DEST_IP . "\n";
