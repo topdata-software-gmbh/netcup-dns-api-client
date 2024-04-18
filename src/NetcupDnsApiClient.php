@@ -290,13 +290,58 @@ class NetcupDnsApiClient
     }
 
 
+//setSOA() {
+//	login
+//	tmp=$(curl -s -X POST -d "{\"action\": \"updateDnsZone\", \"param\": {\"apikey\": \"$apikey\", \"apisessionid\": \"$sid\", \"customernumber\": \"$cid\",\"clientrequestid\": \"$client\" , \"domainname\": \"$1\", \"dnszone\": { \"name\": \"$1\", \"ttl\": \"$2\", \"serial\": \"\", \"refresh\": \"$3\", \"retry\": \"$4\", \"expire\": \"$5\", \"dnssecstatus\": \"$6\"} }}" "$end")
+//	if [ $debug = true ]; then
+//		echo "${tmp}"
+//	fi
+//	if [ "$(echo "$tmp" | jq -r .status)" != "success" ]; then
+//		echo "Error: $tmp"
+//		logout
+//		return 1
+//	fi
+//	logout
+//}
+
+    // untested
     public function setSOA($domain, $ttl, $refresh, $retry, $expire, $dnssecstatus)
     {
-        // Implement setSOA function
+        $data = $this->_post('updateDnsZone', [
+            'clientrequestid' => uniqid(),
+            'domainname'      => $domain,
+            'dnszone'         => [
+                'name'         => $domain,
+                'ttl'          => $ttl,
+                'serial'       => '',
+                'refresh'      => $refresh,
+                'retry'        => $retry,
+                'expire'       => $expire,
+                'dnssecstatus' => $dnssecstatus
+            ]
+        ]);
     }
+
+//listDomains() {
+//	login
+//	tmp=$(curl -s -X POST -d "{\"action\": \"listallDomains\", \"param\": {\"apikey\": \"$apikey\", \"apisessionid\": \"$sid\", \"customernumber\": \"$cid\", \"domainname\": \"$1\"}}" "$end")
+//	if [ $debug = true ]; then
+//		echo "$tmp"
+//	fi
+//	if [ "$(echo "$tmp" | jq -r .status)" != "success" ]; then
+//		echo "Error: $tmp"
+//		logout
+//		return 1
+//	fi
+//	xxd=$(echo "${tmp}" | jq -r '.responsedata[].domainname')
+//	echo "$xxd"
+//	logout
+//}
 
     public function listDomains()
     {
-        // Implement listDomains function
+        $data = $this->_post('listallDomains');
+
+        return $data['responsedata'];
     }
 }
