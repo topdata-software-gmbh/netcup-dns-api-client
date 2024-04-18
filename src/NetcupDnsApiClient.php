@@ -118,7 +118,7 @@ class NetcupDnsApiClient
 //	echo "${tmp}" | jq --arg host "$1" --arg type "$3" --arg dest "$dest" '.responsedata.dnsrecords[] | select(.hostname==$host and .type==$type and .destination==$dest) .id' | tr -d \"
 //	logout
 //}
-    public function addRecord(string $hostname, string $domain, $recordType, $destination, $priority = 0)
+    public function addRecord(string $domain, string $hostname, string $recordType, string $destination, int $priority = 0)
     {
         $data = $this->_post('updateDnsRecords', [
             'clientrequestid' => uniqid(),
@@ -126,7 +126,7 @@ class NetcupDnsApiClient
             'dnsrecordset'    => [
                 'dnsrecords' => [
                     [
-                        'id'           => '',
+//                        'id'           => '',
                         'hostname'     => $hostname,
                         'type'         => $recordType,
                         'priority'     => $priority,
@@ -137,6 +137,8 @@ class NetcupDnsApiClient
                 ]
             ]
         ]);
+
+        return $data;
     }
 
 //delRecord() {
@@ -165,7 +167,7 @@ class NetcupDnsApiClient
 //	logout
 //}
 
-    public function delRecord($id, $host, $domain, $recordType, $destination, $priority = 0)
+    public function delRecord(string $domain, $id, ?string $hostname = null, ?string $recordType = null, ?string $destination = null, ?int $priority = null)
     {
         $data = $this->_post('updateDnsRecords', [
             'clientrequestid' => uniqid(),
@@ -174,7 +176,7 @@ class NetcupDnsApiClient
                 'dnsrecords' => [
                     [
                         'id'           => $id,
-                        'hostname'     => $host,
+                        'hostname'     => $hostname,
                         'type'         => $recordType,
                         'priority'     => $priority,
                         'destination'  => $destination,
